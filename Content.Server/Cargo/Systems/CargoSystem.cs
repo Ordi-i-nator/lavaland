@@ -7,6 +7,7 @@ using Content.Server.Station.Systems;
 using Content.Shared.Access.Systems;
 using Content.Shared.Administration.Logs;
 using Content.Server.Radio.EntitySystems;
+using Content.Server.RoundEnd;
 using Content.Shared.Cargo;
 using Content.Shared.Cargo.Components;
 using Content.Shared.Cargo.Prototypes;
@@ -43,6 +44,10 @@ public sealed partial class CargoSystem : SharedCargoSystem
     [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
     [Dependency] private readonly MetaDataSystem _metaSystem = default!;
     [Dependency] private readonly RadioSystem _radio = default!;
+
+    // LV EDIT START
+    [Dependency] private readonly RoundEndSystem _roundEndSystem = default!;
+    // LV EDIT END
 
     private EntityQuery<TransformComponent> _xformQuery;
     private EntityQuery<CargoSellBlacklistComponent> _blacklistQuery;
@@ -111,6 +116,15 @@ public sealed partial class CargoSystem : SharedCargoSystem
         {
             var accountBalancedAdded = (int) Math.Round(percent * balanceAdded);
             ent.Comp.Accounts[account] += accountBalancedAdded;
+
+            // LV EDIT START
+
+            if (ent.Comp.Accounts[account] > 40000)
+            {
+                _roundEndSystem.EndRound();
+            }
+
+            // LV EDIT END
         }
 
         var ev = new BankBalanceUpdatedEvent(ent, ent.Comp.Accounts);
